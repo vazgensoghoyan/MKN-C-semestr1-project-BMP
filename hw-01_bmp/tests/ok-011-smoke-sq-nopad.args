@@ -1,0 +1,1 @@
+crop-rotate TESTS_DIR/lena_512.bmp OUTPUT_FILE 100 50 128 128
