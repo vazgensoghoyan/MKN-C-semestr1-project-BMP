@@ -79,8 +79,32 @@ bmp_t crop(bmp_t bmp, int x, int y, int width, int height) {
     return cropped;
 }
 
-void rotate(bmp_t bmp) {
+bmp_t rotate(bmp_t bmp) {
+    int height = bmp.v5header->image_height;
+    int width = bmp.v5header->image_width;
 
+    pixel_t *pixels = malloc(height * width * sizeof(pixel_t));
+    pixel_t **new_pixel_array = malloc(width * sizeof(pixel_t *));
+
+    for (int i = 0; i < width; i++) {
+        new_pixel_array[i] = pixels + i * height;
+
+        for (int j = 0; j < height; j++)
+            new_pixel_array[i][j] = bmp.pixel_array[j][width-i-1];
+    }
+
+    int padding = calculate_padding(sizeof(pixel_t), height);
+    int new_image_size = (sizeof(pixel_t) * height + padding) * width;
+
+    bmp.fileheader->file_size += new_image_size - bmp.v5header->image_size;
+    bmp.v5header->image_size = new_image_size;
+
+    bmp.v5header->image_height = width;
+    bmp.v5header->image_width = height;
+
+    bmp.pixel_array = new_pixel_array;
+
+    return bmp;
 }
 
 void save_bmp(char *filepath, bmp_t bmp) {
