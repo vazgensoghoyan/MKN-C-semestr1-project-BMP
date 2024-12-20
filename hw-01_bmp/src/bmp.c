@@ -25,8 +25,8 @@ bmp_t load_bmp(char *filepath) {
 
     int padding = calculate_padding(sizeof(pixel_t), width);
     
-    pixel_t *pixels = malloc(width*height*sizeof(pixel_t));
-    pixel_t **pxl_array = malloc(height*sizeof(pixel_t *));
+    pixel_t *pixels = malloc(width * height * sizeof(pixel_t));
+    pixel_t **pxl_array = malloc(height * sizeof(pixel_t *));
 
     for (int x = 0; x < height; x++) {
         pxl_array[x] = pixels + x * width;
@@ -45,9 +45,47 @@ bmp_t load_bmp(char *filepath) {
     return bitmap;
 }
 
+bmp_t crop(bmp_t bmp, int x, int y, int width, int height) {
+    bmp_t cropped;
+
+    cropped.fileheader = malloc(sizeof(bmp_fileheader_t));
+    cropped.v5header = malloc(sizeof(bmp_v5header_t));
+
+    *cropped.fileheader = *bmp.fileheader;
+    *cropped.v5header = *bmp.v5header;
+
+    int padding = calculate_padding(sizeof(pixel_t), width);
+
+    cropped.v5header->image_height = height;
+    cropped.v5header->image_width = width;
+    cropped.v5header->image_size = (sizeof(pixel_t) * width + padding) * height;
+
+    cropped.fileheader->file_size = bmp.fileheader->file_size - \
+                                    bmp.v5header->image_size + \
+                                    cropped.v5header->image_size;
+
+    pixel_t *pixels = malloc(width *height * sizeof(pixel_t));
+    pixel_t **pxl_array = malloc(height * sizeof(pixel_t *));
+
+    for (int i = 0; i < height; i++) {
+        pxl_array[i] = pixels + i * width;
+
+        for (int j = 0; j < width; j++)
+            pxl_array[i][j] = bmp.pixel_array[x+i][y+j];
+    }
+
+    cropped.pixel_array = pxl_array;
+
+    return cropped;
+}
+
+void rotate(bmp_t bmp) {
+
+}
+
 void save_bmp(char *filepath, bmp_t bmp) {
     FILE *file = fopen(filepath, "wb");
-    
+
     fwrite(bmp.fileheader, sizeof(bmp_fileheader_t), 1, file);
     fwrite(bmp.v5header, sizeof(bmp_v5header_t), 1, file);
 

@@ -14,10 +14,12 @@ int main(int argc, char **argv) {
     int H = atoi(argv[7]);
 
     bmp_t bitmap = load_bmp(IN_FILEPATH);
-    
-    save_bmp(OUT_FILEPATH, bitmap);
+    bmp_t cropped = crop(bitmap, X, Y, W, H);
+    rotate(cropped);
+    save_bmp(OUT_FILEPATH, cropped);
 
     free_bmp(bitmap);
+    free_bmp(cropped);
 
     return 0;
 }
