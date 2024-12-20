@@ -28,6 +28,9 @@ typedef struct {
     int header_size;
     int image_width;
     int image_height;
+    int smth1;
+    int smth2;
+    int image_size;
 
 } __attribute__((packed)) bmp_v5header_t;
 
@@ -38,11 +41,12 @@ typedef struct {
 
     pixel_t **pixel_array;
 
-} __attribute__((packed)) bmp_t;
+} bmp_t;
 
 bmp_t load_bmp(char *filepath);
-bmp_t crop(bmp_t *bmp, int x, int y, int width, int height);
-void rotate(bmp_t *bmp);
-void save_bmp(char *filepath, bmp_t *bmp);
+bmp_t crop(bmp_t bmp, int x, int y, int width, int height);
+void rotate(bmp_t bmp);
+void save_bmp(char *filepath, bmp_t bmp);
+void free_bmp(bmp_t bmp);
 
 #endif

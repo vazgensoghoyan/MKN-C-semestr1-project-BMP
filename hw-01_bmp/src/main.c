@@ -14,6 +14,10 @@ int main(int argc, char **argv) {
     int H = atoi(argv[7]);
 
     bmp_t bitmap = load_bmp(IN_FILEPATH);
+    
+    save_bmp(OUT_FILEPATH, bitmap);
+
+    free_bmp(bitmap);
 
     return 0;
 }
