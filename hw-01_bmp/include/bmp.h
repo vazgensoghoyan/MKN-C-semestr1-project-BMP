@@ -17,20 +17,20 @@ typedef struct {
 typedef struct {
     
     char signature[2];
-    int file_size;
-    int reserved;
-    int file_offset_to_pixels;
+    unsigned int file_size;
+    unsigned int reserved;
+    unsigned int file_offset_to_pixels;
 
 } __attribute__((packed)) bmp_fileheader_t;
 
 typedef struct {
 
-    int header_size;
-    int image_width;
-    int image_height;
-    int smth1;
-    int smth2;
-    int image_size;
+    unsigned int header_size;
+    unsigned int image_width;
+    unsigned int image_height;
+    unsigned int smth1;
+    unsigned int smth2;
+    unsigned int image_size;
 
 } __attribute__((packed)) bmp_v5header_t;
 
