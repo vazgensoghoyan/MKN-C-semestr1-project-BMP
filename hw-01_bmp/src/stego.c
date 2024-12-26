@@ -1,8 +1,6 @@
 #include "stego.h"
 #include "bmp.h"
 
-#define ppppp(pixel, i, c) { pixel->c -= (pixel->c & 1); pixel->c += i % 2; }
-
 int symbol_to_int(char c) {
     if (c == ' ')
         return 26;
@@ -28,7 +26,7 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
     
     if (load_bmp(in_filepath, bitmap)) return 1;
 
-    FILE *key_file = fopen(key_txt, "r");
+    FILE *key_file = fopen(key_txt, "rb");
     FILE *msg_file = fopen(msg_txt, "r");
 
     if (key_file == NULL || msg_file == NULL) return 1;
@@ -54,9 +52,9 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
 
             pixel_t *p = &bitmap->pixel_array[y][x];
             
-            if (c == 'B') ppppp(p, secret_info, B);
-            if (c == 'G') ppppp(p, secret_info, G);
-            if (c == 'R') ppppp(p, secret_info, R);
+            if (c == 'B') p->B += (i % 2) - (p->B & 1);
+            if (c == 'G') p->G += (i % 2) - (p->G & 1);
+            if (c == 'R') p->R += (i % 2) - (p->R & 1);
                 
             secret_info >>= 1;
 
@@ -80,7 +78,7 @@ int extract(char *in_filepath, char *key_txt, char *msg_txt) {
     if (load_bmp(in_filepath, bitmap)) return 1;
 
     FILE *key_file = fopen(key_txt, "r");
-    FILE *msg_file = fopen(msg_txt, "r");
+    FILE *msg_file = fopen(msg_txt, "wb");
 
     if (key_file == NULL || msg_file == NULL) return 1;
 
