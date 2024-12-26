@@ -54,7 +54,7 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
 
             pixel_t *p = &bitmap->pixel_array[y][x];
             
-            if (c == 'B') ppppp(p, secret_info, G);
+            if (c == 'B') ppppp(p, secret_info, B);
             if (c == 'G') ppppp(p, secret_info, G);
             if (c == 'R') ppppp(p, secret_info, R);
                 
