@@ -1,7 +1,7 @@
 #include "stego.h"
 #include "bmp.h"
 
-#define ppppp(pixel, i, c) { pixel.c -= (pixel.c & 1); pixel.c += i % 2; }
+#define ppppp(pixel, i, c) { pixel->c -= (pixel->c & 1); pixel->c += i % 2; }
 
 int symbol_to_int(char c) {
     if (c == ' ')
@@ -28,8 +28,8 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
     
     if (load_bmp(in_filepath, bitmap)) return 1;
 
-    FILE *key_file = fopen(key_txt, "rb");
-    FILE *msg_file = fopen(msg_txt, "rb");
+    FILE *key_file = fopen(key_txt, "r");
+    FILE *msg_file = fopen(msg_txt, "r");
 
     if (key_file == NULL || msg_file == NULL) return 1;
 
@@ -45,17 +45,23 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
         secret_info = symbol_to_int(current_char);
 
         for (int i = 0; i < 5; i++) {
-            fscanf(key_file, "%d %d %c\n", &x, &y, &c);
-            y = bitmap->v5header->image_height - 1 - y;
+            if (fscanf(key_file, "%d %d %c\n", &x, &y, &c) != 3)
+                break;
+            if (ferror(key_file))
+                break;
             
-            if (c == 'B')
-                ppppp(bitmap->pixel_array[y][x], secret_info, G);
-            if (c == 'G')
-                ppppp(bitmap->pixel_array[y][x], secret_info, G);
-            if (c == 'R')
-                ppppp(bitmap->pixel_array[y][x], secret_info, R);
+            y = bitmap->v5header->image_height - 1 - y;
+
+            pixel_t *p = &bitmap->pixel_array[y][x];
+            
+            if (c == 'B') ppppp(p, secret_info, G);
+            if (c == 'G') ppppp(p, secret_info, G);
+            if (c == 'R') ppppp(p, secret_info, R);
                 
             secret_info >>= 1;
+
+            if (feof(key_file))
+                break;
         }
     }
 
@@ -73,8 +79,8 @@ int extract(char *in_filepath, char *key_txt, char *msg_txt) {
     
     if (load_bmp(in_filepath, bitmap)) return 1;
 
-    FILE *key_file = fopen(key_txt, "rb");
-    FILE *msg_file = fopen(msg_txt, "rb");
+    FILE *key_file = fopen(key_txt, "r");
+    FILE *msg_file = fopen(msg_txt, "r");
 
     if (key_file == NULL || msg_file == NULL) return 1;
 
@@ -89,7 +95,7 @@ int extract(char *in_filepath, char *key_txt, char *msg_txt) {
         if (c == 'G') current_info += (bitmap->pixel_array[y][x].G & 1) << bytes_read;
         if (c == 'R') current_info += (bitmap->pixel_array[y][x].R & 1) << bytes_read;
         bytes_read++;
-        
+
         if (bytes_read == 5) {
             bytes_read = 0;
             current_info = 0;
