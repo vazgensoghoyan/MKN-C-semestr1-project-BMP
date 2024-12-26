@@ -10,7 +10,7 @@ int symbol_to_int(char c) {
         return 27;
     if (c == ',')
         return 28;
-    return c - 'a';
+    return c - 'A';
 }
 
 char int_to_sybmol(int x) {
@@ -20,7 +20,7 @@ char int_to_sybmol(int x) {
         return '.';
     if (x == 28)
         return ',';
-    return x + 'a';
+    return x + 'A';
 }
 
 int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) {
@@ -37,7 +37,7 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
     int secret_info, x, y;
 
     while (!feof(msg_file)) {
-        if (fread(&current_char, sizeof(char), 1, msg_file))
+        if (fread(&current_char, sizeof(char), 1, msg_file) != 1)
             break;
         if (ferror(msg_file))
             break;
