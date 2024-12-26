@@ -3,10 +3,10 @@ all: obj obj/main.o obj/bmp.o hw-01_bmp
 obj:
 	mkdir obj
 
-obj/main.o: src/main.c
+obj/main.o: src/main.c include/bmp.h
 	gcc -c src/main.c -I include -o obj/main.o
 
-obj/bmp.o: src/bmp.c
+obj/bmp.o: src/bmp.c include/bmp.h
 	gcc -c src/bmp.c -I include -o obj/bmp.o
 
 hw-01_bmp: obj/main.o obj/bmp.o

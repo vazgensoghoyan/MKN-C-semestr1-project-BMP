@@ -13,22 +13,20 @@ int main(int argc, char **argv) {
     int W = atoi(argv[6]);
     int H = atoi(argv[7]);
 
-    bmp_t bitmap;
-    bmp_t cropped;
+    bmp_t *bitmap = malloc(sizeof(bmp_t));
 
-    if (load_bmp(IN_FILEPATH, &bitmap))
-        return 1;
-    
-    if (crop(bitmap, &cropped, X, Y, W, H))
+    if (load_bmp(IN_FILEPATH, bitmap))
         return 1;
 
-    if (rotate(&cropped))
+    if (crop(bitmap, X, Y, W, H))
         return 1;
 
-    save_bmp(OUT_FILEPATH, cropped);
+    if (rotate(bitmap))
+        return 1;
+
+    save_bmp(OUT_FILEPATH, bitmap);
 
     free_bmp(bitmap);
-    free_bmp(cropped);
 
     return 0;
 }
