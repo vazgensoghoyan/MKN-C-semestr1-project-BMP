@@ -33,10 +33,7 @@ int load_bmp(char *filepath, bmp_t *bitmap) {
 
     for (int x = 0; x < height; x++) {
         pxl_array[x] = pixels + x * width;
-
-        for (int y = 0; y < width; y++) 
-            fread(&pxl_array[x][y], sizeof(pixel_t), 1, file);
-
+        fread(pxl_array[x], sizeof(pixel_t), width, file);
         fseek(file, padding, SEEK_CUR);
     }
 
