@@ -30,6 +30,8 @@ int main(int argc, char **argv) {
         save_bmp(OUT_FILEPATH, bitmap);
 
         free_bmp(bitmap);
+
+        return 0;
     }
 
     if (strcmp(target, "insert") && argc == ARGS_COUNT_FOR_INS) {
@@ -38,6 +40,8 @@ int main(int argc, char **argv) {
 
         char *KEY_TXT = argv[4];
         char *MSG_TXT = argv[5];
+
+        return insert(IN_FILEPATH, OUT_FILEPATH, KEY_TXT, MSG_TXT);
     }
 
     if (strcmp(target, "extract") && argc == ARGS_COUNT_FOR_EXTR) {
@@ -45,7 +49,9 @@ int main(int argc, char **argv) {
 
         char *KEY_TXT = argv[3];
         char *MSG_TXT = argv[4];
+
+        return 0;
     }
 
-    return 0;
+    return 1;
 }
