@@ -9,9 +9,9 @@
 #pragma pack(push, 1)
 typedef struct {
 
-    char R;
-    char G;
     char B;
+    char G;
+    char R;
 
 } pixel_t;
 
