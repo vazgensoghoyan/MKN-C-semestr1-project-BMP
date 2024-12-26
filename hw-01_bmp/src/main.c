@@ -1,4 +1,5 @@
 #include "bmp.h"
+#include "stego.h"
 
 int main(int argc, char **argv) {
     char *target = argv[1];
@@ -50,7 +51,7 @@ int main(int argc, char **argv) {
         char *KEY_TXT = argv[3];
         char *MSG_TXT = argv[4];
 
-        return 0;
+        return extract(IN_FILEPATH, KEY_TXT, MSG_TXT);
     }
 
     return 1;
