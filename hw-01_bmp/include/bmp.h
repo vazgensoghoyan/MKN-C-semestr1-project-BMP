@@ -31,10 +31,6 @@ typedef struct {
     int smth1;
     int smth2;
     unsigned int image_size;
-    int smth3;
-    int smth4;
-    int smth5;
-    int smth6;
 
 } __attribute__((packed)) bmp_v5header_t;
 

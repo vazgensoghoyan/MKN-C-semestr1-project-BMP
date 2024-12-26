@@ -12,13 +12,12 @@ int load_bmp(char *filepath, bmp_t *bitmap) {
     if (!file) return 1;
 
     bitmap->fileheader = malloc(sizeof(bmp_fileheader_t));
-    if (bitmap->fileheader == NULL) return 1;
-
     bitmap->v5header = malloc(sizeof(bmp_v5header_t));
-    if (bitmap->v5header == NULL) return 1;
 
     fread(bitmap->fileheader, sizeof(bmp_fileheader_t), 1, file);
     fread(bitmap->v5header, sizeof(bmp_v5header_t), 1, file);
+
+    fseek(file, bitmap->fileheader->file_offset_to_pixels, SEEK_SET);
 
     int height = bitmap->v5header->image_height;
     int width = bitmap->v5header->image_width;
@@ -26,18 +25,11 @@ int load_bmp(char *filepath, bmp_t *bitmap) {
     int padding = calculate_padding(sizeof(pixel_t), width);
     
     pixel_t *pixels = malloc(width * height * sizeof(pixel_t));
-    if (pixels == NULL) return 1;
-
     pixel_t **pxl_array = malloc(height * sizeof(pixel_t *));
-    if (pxl_array == NULL) return 1;
 
     for (int x = 0; x < height; x++) {
         pxl_array[x] = pixels + x * width;
-
-        for (int y = 0; y < width; y++) {
-            fread(&pxl_array[x][y], sizeof(pixel_t), 1, file);
-        }
-
+        fread(&pxl_array[x], sizeof(pixel_t), width, file);
         fseek(file, padding, SEEK_CUR);
     }
 
@@ -57,10 +49,7 @@ int crop(bmp_t bmp, bmp_t *cropped, int x, int y, int width, int height) {
     y = bmp.v5header->image_height - y - height;
 
     cropped->fileheader = malloc(sizeof(bmp_fileheader_t));
-    if (cropped->fileheader == NULL) return 1;
-
     cropped->v5header = malloc(sizeof(bmp_v5header_t));
-    if (cropped->v5header == NULL) return 1;
 
     *(cropped->fileheader) = *bmp.fileheader;
     *(cropped->v5header) = *bmp.v5header;
@@ -70,22 +59,16 @@ int crop(bmp_t bmp, bmp_t *cropped, int x, int y, int width, int height) {
     cropped->v5header->image_height = height;
     cropped->v5header->image_width = width;
     cropped->v5header->image_size = (sizeof(pixel_t) * width + padding) * height;
-
-    cropped->fileheader->file_size = bmp.fileheader->file_size - \
-                                    bmp.v5header->image_size + \
-                                    cropped->v5header->image_size;
+    cropped->fileheader->file_size = cropped->v5header->image_size + cropped->fileheader->file_offset_to_pixels;
 
     pixel_t *pixels = malloc(width *height * sizeof(pixel_t));
-    if (pixels == NULL) return 1;
-
     pixel_t **pxl_array = malloc(height * sizeof(pixel_t *));
-    if (pxl_array == NULL) return 1;
 
     for (int i = 0; i < height; i++) {
         pxl_array[i] = pixels + i * width;
 
         for (int j = 0; j < width; j++)
-            pxl_array[i][j] = bmp.pixel_array[x+i][y+j];
+            pxl_array[i][j] = bmp.pixel_array[y+i][x+j];
     }
 
     cropped->pixel_array = pxl_array;
@@ -98,10 +81,7 @@ int rotate(bmp_t *bmp) {
     int width = bmp->v5header->image_width;
 
     pixel_t *pixels = malloc(height * width * sizeof(pixel_t));
-    if (pixels == NULL) return 1;
-
     pixel_t **new_pixel_array = malloc(width * sizeof(pixel_t *));
-    if (new_pixel_array == NULL) return 1;
 
     for (int i = 0; i < width; i++) {
         new_pixel_array[i] = pixels + i * height;
@@ -113,7 +93,7 @@ int rotate(bmp_t *bmp) {
     int padding = calculate_padding(sizeof(pixel_t), height);
     int new_image_size = (sizeof(pixel_t) * height + padding) * width;
 
-    bmp->fileheader->file_size += new_image_size - bmp->v5header->image_size;
+    bmp->fileheader->file_size = new_image_size + bmp->fileheader->file_offset_to_pixels;
     bmp->v5header->image_size = new_image_size;
 
     bmp->v5header->image_height = width;
@@ -127,8 +107,12 @@ int rotate(bmp_t *bmp) {
 void save_bmp(char *filepath, bmp_t bmp) {
     FILE *file = fopen(filepath, "wb");
 
+    const int ZERO = 0;
+
     fwrite(bmp.fileheader, sizeof(bmp_fileheader_t), 1, file);
     fwrite(bmp.v5header, sizeof(bmp_v5header_t), 1, file);
+
+    fseek(file, bmp.fileheader->file_offset_to_pixels, SEEK_SET);
 
     int height = bmp.v5header->image_height;
     int width = bmp.v5header->image_width;
@@ -137,9 +121,7 @@ void save_bmp(char *filepath, bmp_t bmp) {
 
     for (int i = 0; i < height; i++) {
         fwrite(bmp.pixel_array[i], sizeof(pixel_t), width, file);
-        
-        for (int j = 0; j < padding; j++)
-            fputc(0, file);
+        fwrite(&ZERO, padding, 1, file);
     }
 
     fclose(file);
