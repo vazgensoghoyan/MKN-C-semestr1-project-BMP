@@ -35,7 +35,10 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
     int secret_info = 0, x = 0, y = 0;
 
     while (!feof(msg_file)) {
-        secret_info = symbol_to_int( fgetc(msg_file) );
+        char current_symbol = fgetc(msg_file);
+        if (current_symbol == '\n') break;
+
+        secret_info = symbol_to_int( current_symbol );
 
         for (int i = 0; i < 5; i++) {
             fscanf(key_file, "%d %d %c\n", &x, &y, &c);
@@ -48,9 +51,6 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
             if (c == 'R') p->R += (secret_info & 1) - (p->R & 1);
                 
             secret_info >>= 1;
-
-            if (feof(key_file))
-                break;
         }
     }
 
@@ -95,7 +95,7 @@ int extract(char *in_filepath, char *key_txt, char *msg_txt) {
 
     free(bitmap);
 
-    fwrite("\n", sizeof(char), 1, msg_file);
+    fputc('\n', msg_file);
 
     fclose(key_file);
     fclose(msg_file);
