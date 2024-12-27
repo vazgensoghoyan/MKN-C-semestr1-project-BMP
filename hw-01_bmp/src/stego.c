@@ -31,8 +31,8 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
 
     if (key_file == NULL || msg_file == NULL) return 1;
 
-    char c;
-    int secret_info, x, y;
+    char c = 0;
+    int secret_info = 0, x = 0, y = 0;
 
     while (!feof(msg_file)) {
         secret_info = symbol_to_int( fgetc(msg_file) );
@@ -77,8 +77,8 @@ int extract(char *in_filepath, char *key_txt, char *msg_txt) {
 
     if (key_file == NULL || msg_file == NULL) return 1;
 
-    char needed_char, c;
-    int x, y, bytes_read = 0, current_info = 0;
+    char needed_char = 0, c = 0;
+    int x = 0, y = 0, bytes_read = 0, current_info = 0;
 
     while (!feof(key_file)) {
         fscanf(key_file, "%d %d %c\n", &x, &y, &c);

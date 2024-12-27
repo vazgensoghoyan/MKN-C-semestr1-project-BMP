@@ -32,6 +32,7 @@ typedef struct {
     int smth1;
     int smth2;
     int image_size;
+    int smth[17];
 
 } bmp_v5header_t;
 
