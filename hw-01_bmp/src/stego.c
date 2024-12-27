@@ -11,7 +11,7 @@ int symbol_to_int(char c) {
     return c - 'A';
 }
 
-char int_to_sybmol(int x) {
+char int_to_symbol(int x) {
     if (x == 26)
         return ' ';
     if (x == 27)
@@ -26,21 +26,16 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
     
     if (load_bmp(in_filepath, bitmap)) return 1;
 
-    FILE *key_file = fopen(key_txt, "rb");
+    FILE *key_file = fopen(key_txt, "r");
     FILE *msg_file = fopen(msg_txt, "r");
 
     if (key_file == NULL || msg_file == NULL) return 1;
 
-    char current_char, c;
+    char c;
     int secret_info, x, y;
 
     while (!feof(msg_file)) {
-        if (fread(&current_char, sizeof(char), 1, msg_file) != 1)
-            break;
-        if (ferror(msg_file))
-            break;
-
-        secret_info = symbol_to_int(current_char);
+        secret_info = symbol_to_int( fgetc(msg_file) );
 
         for (int i = 0; i < 5; i++) {
             if (fscanf(key_file, "%d %d %c\n", &x, &y, &c) != 3)
@@ -50,11 +45,11 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
             
             y = bitmap->v5header->image_height - 1 - y;
 
-            pixel_t *p = &bitmap->pixel_array[y][x];
+            pixel_t *p = bitmap->pixel_array[y] + x;
             
-            if (c == 'B') p->B += (i % 2) - (p->B & 1);
-            if (c == 'G') p->G += (i % 2) - (p->G & 1);
-            if (c == 'R') p->R += (i % 2) - (p->R & 1);
+            if (c == 'B') p->B += (secret_info & 1) - (p->B & 1); 
+            if (c == 'G') p->G += (secret_info & 1) - (p->G & 1);
+            if (c == 'R') p->R += (secret_info & 1) - (p->R & 1);
                 
             secret_info >>= 1;
 
@@ -78,26 +73,27 @@ int extract(char *in_filepath, char *key_txt, char *msg_txt) {
     if (load_bmp(in_filepath, bitmap)) return 1;
 
     FILE *key_file = fopen(key_txt, "r");
-    FILE *msg_file = fopen(msg_txt, "wb");
+    FILE *msg_file = fopen(msg_txt, "w");
 
     if (key_file == NULL || msg_file == NULL) return 1;
 
-    char c;
+    char needed_char, c;
     int x, y, bytes_read = 0, current_info = 0;
 
     while (!feof(key_file)) {
         fscanf(key_file, "%d %d %c\n", &x, &y, &c);
         y = bitmap->v5header->image_height - 1 - y;
 
-        if (c == 'B') current_info += (bitmap->pixel_array[y][x].B & 1) << bytes_read;
-        if (c == 'G') current_info += (bitmap->pixel_array[y][x].G & 1) << bytes_read;
-        if (c == 'R') current_info += (bitmap->pixel_array[y][x].R & 1) << bytes_read;
-        bytes_read++;
+        if (c == 'B') needed_char = bitmap->pixel_array[y][x].B;
+        if (c == 'G') needed_char = bitmap->pixel_array[y][x].G;
+        if (c == 'R') needed_char = bitmap->pixel_array[y][x].R;
+
+        current_info += (needed_char & 1) << (bytes_read++);
 
         if (bytes_read == 5) {
             bytes_read = 0;
             current_info = 0;
-            fputc(int_to_sybmol(current_info), msg_file);
+            fputc(int_to_symbol(current_info), msg_file);
         }
     }
 
