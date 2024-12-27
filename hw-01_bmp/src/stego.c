@@ -35,7 +35,10 @@ int insert(char *in_filepath, char *out_filepath, char *key_txt, char *msg_txt) 
     int secret_info = 0, x = 0, y = 0;
 
     while (!feof(msg_file)) {
-        secret_info = symbol_to_int( fgetc(msg_file) );
+        char curr_sumbol;
+        fscanf(&curr_sumbol, sizeof(char), 1, msg_file);
+        secret_info = symbol_to_int(curr_sumbol);
+        //secret_info = symbol_to_int( fgetc(msg_file) );
 
         for (int i = 0; i < 5; i++) {
             if (fscanf(key_file, "%d %d %c\n", &x, &y, &c) != 3)
@@ -93,13 +96,15 @@ int extract(char *in_filepath, char *key_txt, char *msg_txt) {
         if (bytes_read == 5) {
             bytes_read = 0;
             current_info = 0;
-            fputc(int_to_symbol(current_info), msg_file);
+            int curr_sumbol = int_to_symbol(current_info);
+            fwrite(&curr_sumbol, sizeof(char), 1, msg_file);
+            //fgputc(int_to_symbol(current_info), msg_file)
         }
     }
 
     free(bitmap);
 
-    fputc('\n', msg_file);
+    fwrite("\n", sizeof(char), 1, msg_file);
 
     fclose(key_file);
     fclose(msg_file);
